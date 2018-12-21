@@ -34,13 +34,13 @@
 
 A系统发送数据到BCD三个系统，通过接口调用发送，如果E系统也要这个数据的话，或者C系统不用了呢。
 
-![MQ示例图1](https://github.com/AndyFlower/interview/blob/master/src/main/java/com/slp/demo/interview/img/mq-1.png)
+![MQ示例图1](https://github.com/AndyFlower/interview/blob/master/imgs/mq-1.png)
 
 在这个场景中，A系统跟其他各种乱七八糟的系统严重耦合，A系统产生一条比较关键的数据，很多系统都需要A系统将这个数据发送过来，A系统要时时刻刻考虑BCDE四个系统如果挂了怎么办？要不要重发，要不要把消息存起来？
 
 如果使用MQ,A系统产生一条数据，发送到MQ里面去，哪个系统吸引数据自己取MQ里面消费，如果新系统需要数据，直接从MQ里面消费即可；如果某个系统不需要这条数据了，就取消对MQ消息的消费即可。这样，A系统就不需要去考虑发给谁，不需要维护这部分，也不用去处理是否成功或失败超时等问题。
 
-![MQ示例图2](https://github.com/AndyFlower/interview/blob/master/src/main/java/com/slp/demo/interview/img/mq-2.png)
+![MQ示例图2](https://github.com/AndyFlower/interview/blob/master/imgs/mq-2.png)
 
 #### 总结：通过一个MQ，Pub/Sub发布订阅消息这么一个模型，A系统就跟其他系统彻底解耦了。
 #### 面试技巧：考虑自己项目中是有有类似的场景，就是一个系统或者一个模块，调用了多个系统或者模块，互相之前的调用很复杂，维护比较麻烦，但是其实这个调用时不需要直接同步调用的，如果用MQ给它异步化解耦也是可以的。
@@ -49,13 +49,13 @@ A系统发送数据到BCD三个系统，通过接口调用发送，如果E系统
 
 再来看一个场景，A 系统接收一个请求，需要在自己本地写库，还需要在 BCD 三个系统写库，自己本地写库要 3ms，BCD 三个系统分别写库要 300ms、450ms、200ms。最终请求总延时是 3 + 300 + 450 + 200 = 953ms，接近 1s，用户感觉搞个什么东西，慢死了慢死了。用户通过浏览器发起请求，等待个 1s，这几乎是不可接受的。
 
-![MQ示例图3](https://github.com/AndyFlower/interview/blob/master/src/main/java/com/slp/demo/interview/img/mq-3.png)
+![MQ示例图3](https://github.com/AndyFlower/interview/blob/master/imgs/mq-3.png)
 
 一般互联网类的企业，对于用户直接的操作，一般要求是每个请求都必须在 200 ms 以内完成，对用户几乎是无感知的。
 
 如果使用 MQ，那么 A 系统连续发送 3 条消息到 MQ 队列中，假如耗时 5ms，A 系统从接受一个请求到返回响应给用户，总时长是 3 + 5 = 8ms，对于用户而言，其实感觉上就是点个按钮，8ms 以后就直接返回了。
 
-![MQ示例图4](https://github.com/AndyFlower/interview/blob/master/src/main/java/com/slp/demo/interview/img/mq-4.png)
+![MQ示例图4](https://github.com/AndyFlower/interview/blob/master/imgs/mq-4.png)
 
 ### 削峰
 
@@ -65,11 +65,11 @@ A系统发送数据到BCD三个系统，通过接口调用发送，如果E系统
 
 但是高峰期一过，到了下午的时候，就成了低峰期，可能也就 1w 的用户同时在网站上操作，每秒中的请求数量可能也就 50 个请求，对整个系统几乎没有任何的压力。
 
-![MQ示例图5](https://github.com/AndyFlower/interview/blob/master/src/main/java/com/slp/demo/interview/img/mq-5.png)
+![MQ示例图5](https://github.com/AndyFlower/interview/blob/master/imgs/mq-5.png)
 
 如果使用 MQ，每秒 5k 个请求写入 MQ，A 系统每秒钟最多处理 2k 个请求，因为 MySQL 每秒钟最多处理 2k 个。A 系统从 MQ 中慢慢拉取请求，每秒钟就拉取 2k 个请求，不要超过自己每秒能处理的最大请求数量就 ok，这样下来，哪怕是高峰期的时候，A 系统也绝对不会挂掉。而 MQ 每秒钟 5k 个请求进来，就 2k 个请求出去，结果就导致在中午高峰期（1 个小时），可能有几十万甚至几百万的请求积压在 MQ 中。
 
-![MQ示例图6](https://github.com/AndyFlower/interview/blob/master/src/main/java/com/slp/demo/interview/img/mq-6.png)
+![MQ示例图6](https://github.com/AndyFlower/interview/blob/master/imgs/mq-6.png)
 
 这个短暂的高峰期积压是 ok 的，因为高峰期过了之后，每秒钟就 50 个请求进 MQ，但是 A 系统依然会按照每秒 2k 个请求的速度在处理。所以说，只要高峰期一过，A 系统就会快速将积压的消息给解决掉。
 
